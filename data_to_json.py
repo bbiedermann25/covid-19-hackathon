@@ -3,8 +3,8 @@ import json
 
 df = pd.DataFrame(columns = ['County,State', 'cases', 'deaths', '7 day cases','7 day deaths'])
 for i in new_data:
-    cases = i['tstpos'][-7:]
-    deaths =  i['mort'][-7:]
+    cases = i['tstpos'][-8:]
+    deaths =  i['mort'][-8:]
     [i.strip() for i in cases]
     [i.strip() for i in deaths]
     try:
@@ -18,12 +18,12 @@ for i in new_data:
         deaths = ['N/A']
         rlavgd = 'N/A'
     try:
-        rlavgc = sum(cases)/len(cases)
-    except TypeError:
+        rlavgc = (cases[-1] - cases[1])/7
+    except (TypeError, IndexError):
         rlavgc = 'N/A'
     try:
-        rlavgd = sum(deaths)/len(deaths)
-    except TypeError:
+        rlavgd = (deaths[-1] - deaths[1])/7
+    except (TypeError, IndexError):
         rlavgd = 'N/A'
     df = df.append({'County,State': i['county'],'cases':cases[-1],'deaths':deaths[-1],'7 day cases':rlavgc,'7 day deaths':rlavgd},ignore_index = True)
 
