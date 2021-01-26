@@ -3,12 +3,13 @@ import json
 from coviddata import new_data
 
 data_dict = {}
-mapdf = pd.DataFrame(columns = ['fips','Confirmed Cases'])
+Counties = []
+mapdf = pd.DataFrame(columns = ['County','Confirmed Cases'])
 for i in new_data:
-    
     cases = i['tstpos']
     deaths =  i['mort']
     dates = i['day']
+    Counties.append({'label':i['county'], 'value':i['county']})
     c = []
     d = []
     dt = []
@@ -23,15 +24,18 @@ for i in new_data:
     cases =  list(map(float, c))
     deaths =  list(map(float, d))
     dates = dt
-    svdyc = pd.Series(cases).rolling(7).mean().tolist()
-    svdyd = pd.Series(deaths).rolling(7).mean().tolist()
-    if i['state'] not in data_dict:
-        data_dict[i['state']] = [{'county': i['county'], 'cases':cases,'deaths':deaths,'svdyc':svdyc,'svdyd':svdyd,'dates':dates}]
-    else:
-        data_dict[i['state']].append({'county': i['county'], 'cases':cases,'deaths':deaths,'svdyc':svdyc,'svdyd':svdyd,'dates':dates})
+    c = pd.Series(cases).diff().tolist()
+    d = pd.Series(deaths).diff().tolist()
+    c[0] = 0
+    d[0] = 0
+    svdyc = pd.Series(c).rolling(7).mean().tolist()
+    svdyd = pd.Series(d).rolling(7).mean().tolist()
+    data_dict[i['county']] = {'cases':cases,'deaths':deaths,'svdyc':svdyc[6:],'svdyd':svdyd[6:],'dates':dates}
     if '(state)' not in i['county']:
-        mapdf = mapdf.append({'fips':i['fips'][-5:],'Confirmed Cases':cases[-1]},ignore_index = True)  
+        mapdf = mapdf.append({'County':i['county'],'fips':i['fips'][-5:],'Confirmed Cases':cases[-1], 'Confirmed Deaths':deaths[-1]},ignore_index = True)
 
+
+mapdf = mapdf[:-1]
 
 
 
